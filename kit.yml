@@ -1,0 +1,55 @@
+# What an application takes from network-kit, and how. Read by `skillctl.sh kit …`
+# (the skill-manager skill in github.com/Thernal/knowledge), which parses it with
+# sed and awk — so keep to this shape: `key: value` scalars, `key:` followed by
+# `  - item` lines, `#` comments. No nesting, no quoting, no inline lists.
+#
+# An application does not depend on network-kit as a library: it copies the
+# `code` parts into its own tree, renamed to its own package and module path, and
+# skill-manager records where the copy came from so every later change here can
+# be offered to it — merged three ways, so edits made in the application survive.
+
+name: network-kit
+
+# Rename points, applied to every file taken from here, code and skill alike.
+#   package  the Kotlin package prefix, and the source directories it implies
+#   module   the Gradle path prefix of the code parts, and the directory it implies
+#   alias    the version-catalog plugin alias prefix the build files use
+package: io.thernal.networkkit
+module: :network
+alias: networkkit
+
+# Copied into the application and merged on update.
+code:
+  - network/api
+  - network/impl
+  - network/wiring
+  - network/testing
+
+# The public contract — its source, not its README.
+surface:
+  - network/api/src
+  - network/testing/src/commonMain
+
+# Installed into the application's skills directory, renamed like the code.
+skill:
+  - skills/network-kit
+
+# Never copied. A change here is announced on update and read in place.
+docs:
+  - README.md
+  - network/README.md
+  - network/api/README.md
+  - docs
+
+# What the copied modules expect the application to provide. Shown at install and
+# whenever these lines change; never written into the application's build.
+requires:
+  - plugin <alias>.kmp.library — Kotlin Multiplatform library (build-logic/convention: KmpLibraryConventionPlugin)
+  - plugin <alias>.injection — Metro, for network/wiring only (build-logic/convention: InjectionConventionPlugin)
+  - plugin kotlin-serialization (org.jetbrains.kotlin.plugin.serialization, kotlin) — network/impl
+  - targets android, iosArm64, iosSimulatorArm64 — the same set as the other kits
+  - catalog ktor-client-core, ktor-client-content-negotiation, ktor-serialization-kotlinx-json, ktor-client-okhttp, ktor-client-darwin, ktor-client-mock (ktor = 3.5.0)
+  - catalog kotlinx-serialization-json (kotlinx-serialization = 1.9.0), kotlinx-coroutines-core, kotlinx-coroutines-test (kotlinx-coroutines = 1.11.0)
+  - catalog metro-runtime, plugin metro (metro = 1.4.2) — network/wiring only
+  - graph the app binds TokenStore and TokenRefresher and contributes AuthRoutes (the refresh route public) — or excludes NetworkAuthWiring; it makes its ApiClients from ApiClientFactory
+  - settings enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS"), and each code part included as a module
