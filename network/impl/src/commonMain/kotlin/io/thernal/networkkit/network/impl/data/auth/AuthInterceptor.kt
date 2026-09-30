@@ -33,7 +33,7 @@ class AuthInterceptor(
 
     override val order: Int = 1
 
-    override val plugin: ClientPlugin<Unit> = createClientPlugin("NetworkKitAuth") {
+    override val plugin: ClientPlugin<Unit> = createClientPlugin("ApiAuth") {
         on(Send) { request ->
             if (request.matchesAny(public)) {
                 request.headers.remove(HttpHeaders.Authorization)
