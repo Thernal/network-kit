@@ -3,8 +3,8 @@
 The network layer of a Compose Multiplatform app (android, iosArm64, iosSimulatorArm64), on Ktor: an
 `ApiClient` whose calls return a decoded body or throw one `NetworkException`, interceptors, a
 `SessionManager` that owns authentication (one token refresh for any number of failed requests, guests,
-expiry), public and optional routes, envelope and error-body parsing for any backend, and a conditional
-HTTP cache.
+expiry), public and optional routes, envelope and error-body parsing for any backend, automatic retries of
+idempotent requests, connectivity observation, and a conditional HTTP cache.
 
 ```kotlin
 class PostApi(private val client: ApiClient) {
@@ -41,10 +41,10 @@ what the copied modules expect from the application.
 
 | Module | Holds | Depends on |
 |---|---|---|
-| `network/api` | `ApiClient` and its verbs, `ApiRequest`/`RequestBuilder`, `NetworkError`/`NetworkException`/`NetworkResult`/`networkCall`, `ResponseUnwrapper`, `ErrorBodyParser`, `Interceptor`, `SessionManager`/`TokenStore`/`TokenRefresher`/`AuthRoutes`/`ApiRoutePattern`, `HttpCacheStore`/`fetchConditional` | Ktor client core, coroutines, kotlinx.serialization |
-| `network/impl` | `ApiClientFactory` (OkHttp on Android, Darwin on iOS), the client, `DefaultErrorBodyParser`, `DefaultSessionManager`, `AuthInterceptor`, `InMemoryHttpCacheStore` | api, Ktor |
-| `network/wiring` | `NetworkWiring` (the factory, interceptor/unwrapper/parser sets), `NetworkAuthWiring` (session manager, auth interceptor, route set) | api, impl |
-| `network/testing` | `mockApiClient` over Ktor's MockEngine, `respondJson`, `FakeTokenStore`, `FakeTokenRefresher` | api, impl, ktor-client-mock |
+| `network/api` | `ApiClient` and its verbs, `ApiRequest`/`RequestBuilder`, `NetworkError`/`NetworkException`/`NetworkResult`/`networkCall`, `ResponseUnwrapper`, `ErrorBodyParser`, `Interceptor`, `SessionManager`/`TokenStore`/`TokenRefresher`/`AuthRoutes`/`ApiRoutePattern`, `ConnectivityMonitor`, `HttpCacheStore`/`fetchConditional` | Ktor client core, coroutines, kotlinx.serialization |
+| `network/impl` | `ApiClientFactory` (OkHttp on Android, Darwin on iOS), the client, `DefaultErrorBodyParser`, `DefaultSessionManager`, `AuthInterceptor`, `RetryInterceptor`, connectivity (`ConnectivityManager`, `NWPathMonitor`), `InMemoryHttpCacheStore` | api, Ktor |
+| `network/wiring` | `NetworkWiring` (the factory, interceptor/unwrapper/parser sets), `NetworkAuthWiring` (session manager, auth interceptor, route set), `NetworkResilienceWiring` + `NetworkConnectivity{Android,Ios}Wiring` (retries, connectivity) | api, impl |
+| `network/testing` | `mockApiClient` over Ktor's MockEngine, `respondJson`, `FakeTokenStore`, `FakeTokenRefresher`, `FakeConnectivityMonitor` | api, impl, ktor-client-mock |
 
 ## Building
 
@@ -53,6 +53,7 @@ what the copied modules expect from the application.
 ```
 
 Every target compiled, tests on the JVM host and the iOS simulator (the same MockEngine suites on both:
-decoding, every error mapping, envelopes, the conditional cache, uploads, and authentication — including
-five concurrent 401s sharing one refresh), and Detekt, which fails on any finding. `-PdetektAutoCorrect=true`
+decoding, every error mapping, envelopes, the conditional cache, uploads, retries — backoff, `Retry-After`,
+nothing retried while offline or for POST — and authentication, including five concurrent 401s sharing one
+refresh; `NWPathMonitor` runs for real on the simulator), and Detekt, which fails on any finding. `-PdetektAutoCorrect=true`
 lets ktlint fix formatting first. The Gradle daemon runs on JDK 21 (Metro).

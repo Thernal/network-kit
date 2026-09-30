@@ -52,4 +52,5 @@ requires:
   - catalog kotlinx-serialization-json (kotlinx-serialization = 1.9.0), kotlinx-coroutines-core, kotlinx-coroutines-test (kotlinx-coroutines = 1.11.0)
   - catalog metro-runtime, plugin metro (metro = 1.4.2) — network/wiring only
   - graph the app binds TokenStore and TokenRefresher and contributes AuthRoutes (the refresh route public) — or excludes NetworkAuthWiring; it makes its ApiClients from ApiClientFactory
+  - manifest android.permission.ACCESS_NETWORK_STATE in the Android application — ConnectivityMonitor (or exclude the resilience and connectivity wiring)
   - settings enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS"), and each code part included as a module

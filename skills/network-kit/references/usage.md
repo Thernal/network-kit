@@ -53,6 +53,17 @@ class ClientHeaders : Interceptor {
 Contribute one `ResponseUnwrapper` (`JsonElement` → the part to decode, or throw `NetworkException`) and, if
 errors differ, one `ErrorBodyParser`.
 
+## Retries and connectivity
+
+Idempotent requests are retried automatically (`NetworkResilienceWiring`): drops, timeouts, 502/503/504, 429
+with `Retry-After`; at most twice; never POST/PATCH; never while offline. Do not add another retry loop on top.
+
+```kotlin
+connectivity.status.collect { banner(it == Connectivity.Offline) }   // ConnectivityMonitor
+```
+
+Android: `ACCESS_NETWORK_STATE` in the manifest.
+
 ## Conditional cache
 
 `client.fetchConditional<T>(store, path)` → the body, or null on 304. `InMemoryHttpCacheStore`, or your own
@@ -74,5 +85,6 @@ val authed = mockApiClient(interceptors = setOf(AuthInterceptor(session, setOf(r
 | users logged out on a flaky network | the refresher catches failures and returns null — let its `NetworkException` through |
 | 401 right after sign-in | `session.signIn` was not called, or the store writes but the manager was bypassed |
 | `Serialization` errors on success | the backend wraps bodies — add a `ResponseUnwrapper` |
+| a request is sent twice | a retry of an idempotent request — make the endpoint idempotent, or use POST |
 | every test call times out | a test client with timeouts under `runTest` — use `mockApiClient` or `NetworkConfig(timeouts = null)` |
 | `Metro: cycle` involving `TokenRefresher` | the refresher was injected eagerly somewhere; the session manager takes it lazily — do the same |

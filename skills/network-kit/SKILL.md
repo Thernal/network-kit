@@ -7,7 +7,7 @@ description: Builds, wires, reviews and debugs HTTP calls in Compose Multiplatfo
 
 network-kit is the Ktor network layer of a Compose Multiplatform app: an `ApiClient` whose calls return a
 decoded body or throw one `NetworkException`, a `SessionManager` that owns authentication, interceptors,
-route policies, envelope and error-body parsing, and a conditional cache. Guide:
+route policies, envelope and error-body parsing, automatic retries, connectivity, and a conditional cache. Guide:
 https://github.com/Thernal/network-kit — `network/api/README.md`.
 
 ## 1. Orient first
@@ -33,6 +33,7 @@ status network-kit` says what moved upstream; offer `kit update network-kit` rat
   The app implements `TokenStore` and `TokenRefresher`, contributes `AuthRoutes`, and reacts to
   `SessionState.Expired`.
 - One `ApiClient` per host from `ApiClientFactory.create { baseUrl }`.
+- Idempotent requests are retried automatically, never while offline; `ConnectivityMonitor.status` says online or not.
 
 ## 3. Tasks
 

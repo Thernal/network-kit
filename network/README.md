@@ -64,6 +64,19 @@ makes a client per host over one shared Ktor client, and reads the base URL on e
 console that switches environments at run time works without rebuilding anything. Presigned uploads go
 through a second Ktor client with no interceptors: no token and no app headers reach a storage provider.
 
+## Retries: only what is safe, never against no network
+
+Neither source app retried. The kit does, within limits that make it safe to have on by default: only
+idempotent methods (a retried POST can create twice), only failures a second try can fix (a dropped
+connection, a timeout, 502/503/504, 429), at most two retries with exponential backoff and jitter — or the
+server's `Retry-After`, unless that is longer than the caller should wait. While the device is offline it
+does not retry at all: backing off against no network only delays the `NoConnection` the screen has to show.
+It sits inside authentication (order 10 after 1), so an authenticated attempt is what is retried.
+
+`ConnectivityMonitor` is the platform's own view — `ConnectivityManager`'s validated internet capability on
+Android, `NWPathMonitor` on iOS — as a `StateFlow`. It says a route exists, not that the server answers.
+Retries and connectivity have their own wiring containers, so an app that wants neither excludes them.
+
 ## What is not here
 
 The debug console, logging and app headers are interceptors the app contributes — the kit depends on no

@@ -14,6 +14,7 @@ The network contracts. Package `io.thernal.networkkit.network.api`.
 | `Interceptor` | a Ktor client plugin every client installs |
 | `SessionManager`, `SessionState`, `Tokens`, `TokenStore`, `TokenRefresher`, `RefreshOutcome` | authentication |
 | `AuthRoutes`, `ApiRoutePattern` | public and optional routes |
+| `ConnectivityMonitor`, `Connectivity` | whether the device is online |
 | `HttpCacheStore`, `CacheValidators`, `ConditionalResult`, `fetchConditional` | conditional requests |
 
 ## Installing
@@ -166,6 +167,28 @@ class ClientHeaders(private val info: AppInfo) : Interceptor {
 Lower `order` runs first; auth is `1`. A debug console's Ktor plugin is contributed the same way, in
 non-production builds.
 
+## Retries and connectivity
+
+`NetworkResilienceWiring` installs `RetryInterceptor`: idempotent requests (GET, HEAD, PUT, DELETE, OPTIONS)
+that failed with a dropped connection, a timeout, 502/503/504 or 429 are retried up to twice, with
+exponential backoff and jitter or the server's `Retry-After` (up to 30 s). POST and PATCH are never retried.
+Nothing is retried while offline. Tune it by binding your own:
+
+```kotlin
+RetryInterceptor(policy = RetryPolicy(maxRetries = 3, initialDelay = 1.seconds), connectivity = monitor)
+```
+
+`ConnectivityMonitor.status` is a `StateFlow<Connectivity>` (`Unknown`, `Online`, `Offline`) for an offline
+banner or pausing sync:
+
+```kotlin
+connectivity.status.collect { showOfflineBanner(it == Connectivity.Offline) }
+```
+
+Android needs `<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />` in the app's
+manifest, and the graph's `Context` (`NetworkConnectivityAndroidWiring`). To opt out of both, exclude
+`NetworkResilienceWiring` and the two connectivity containers from the graph.
+
 ## Conditional cache
 
 ```kotlin
@@ -189,4 +212,4 @@ val client = mockApiClient { request ->
 
 `mockApiClient` is the real client — same decoding, errors and interceptors — over MockEngine, with no
 timeouts (they would fire at once under `runTest`'s virtual time). `FakeTokenStore` and `FakeTokenRefresher`
-drive a `DefaultSessionManager` in auth tests.
+drive a `DefaultSessionManager` in auth tests; `FakeConnectivityMonitor` switches online and offline.
