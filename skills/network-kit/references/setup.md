@@ -5,6 +5,8 @@ then include the four modules and provide what `kit.yml`'s `requires` lists (con
 `<alias>.kmp.library` / `<alias>.injection`, the serialization plugin, Ktor artifacts incl. OkHttp,
 Darwin and mock, kotlinx-serialization-json, coroutines, Metro).
 
+Without skill-manager, the kit's `README.md` → Installing → *Without it* does the same by hand (copy, rename, provide).
+
 ## Dependencies
 
 ```kotlin
