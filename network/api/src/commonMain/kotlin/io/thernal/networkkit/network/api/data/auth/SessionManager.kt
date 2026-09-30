@@ -21,9 +21,10 @@ interface TokenStore {
 }
 
 /**
- * Renews [current] at the app's refresh endpoint: the new tokens, or null when the server rejected
- * the refresh token — the session is over. A transient failure (offline, timeout) throws a
- * `NetworkException` instead, and the session is kept.
+ * Renews [current] at the app's refresh endpoint: the new tokens, or null when there is nothing to
+ * refresh with. Call the endpoint through an `ApiClient` and let its `NetworkException` through: one the
+ * server answered (401, 403, another rejection) ends the session; offline, a timeout, an unavailable or
+ * rate-limiting server keep it.
  */
 fun interface TokenRefresher {
     suspend fun refresh(current: Tokens): Tokens?

@@ -43,8 +43,9 @@ plugin, and the app learned about an ended session through its repository. Here 
 
 The app implements two small things — `TokenStore` (over its secure storage) and `TokenRefresher` (its
 refresh endpoint) — and watches `state`: `Expired` is where it sends the user to sign in. A rejected refresh
-expires the session; a refresh that could not be tried (offline) keeps it; fresh tokens the server keeps
-rejecting expire it after the retries.
+expires the session — null from the refresher, or a status the refresh endpoint answered with; a refresh that
+could not be tried (offline, timeout, the server unavailable) keeps it; fresh tokens the server keeps rejecting
+expire it after the retries.
 
 No token is a guest, not an error: requests go out without `Authorization`, and a 401 refreshes and ends
 nothing — the caller gets `Unauthorized`.

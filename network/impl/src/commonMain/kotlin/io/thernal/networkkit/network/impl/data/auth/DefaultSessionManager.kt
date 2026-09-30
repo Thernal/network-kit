@@ -6,6 +6,7 @@ import io.thernal.networkkit.network.api.data.auth.SessionState
 import io.thernal.networkkit.network.api.data.auth.TokenRefresher
 import io.thernal.networkkit.network.api.data.auth.TokenStore
 import io.thernal.networkkit.network.api.data.auth.Tokens
+import io.thernal.networkkit.network.api.domain.NetworkError
 import io.thernal.networkkit.network.api.domain.NetworkException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -80,30 +81,63 @@ class DefaultSessionManager(
         return refresh.await()
     }
 
-    @Suppress("TooGenericExceptionCaught") // An app's refresher failing in any way keeps the session.
+    /**
+     * The refresher's answer decides: new tokens refresh; null, or a `NetworkException` the server
+     * answered (401, 403, any other status it rejected the refresh token with), end the session;
+     * a failure that says nothing about the token — offline, timeout, the server unavailable or
+     * rate-limiting, anything unexpected — keeps it for the next attempt.
+     */
+    @Suppress("TooGenericExceptionCaught") // An app's refresher failing unexpectedly keeps the session.
     private suspend fun renew(current: Tokens): RefreshOutcome {
-        val outcome = try {
-            val renewed = refresher.refresh(current)
-            lock.withLock {
-                if (renewed == null) {
-                    endLocked(SessionState.Expired)
-                    RefreshOutcome.Rejected
-                } else {
-                    store.write(renewed)
-                    tokens = renewed
-                    mutableState.value = SessionState.Authenticated
-                    RefreshOutcome.Refreshed
-                }
-            }
+        val renewed = try {
+            Renewal.Issued(refresher.refresh(current))
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (_: NetworkException) {
-            RefreshOutcome.Failed
+        } catch (failure: NetworkException) {
+            if (failure.error.isTransient()) {
+                Renewal.Unavailable
+            } else {
+                Renewal.Issued(null)
+            }
         } catch (_: Exception) {
-            RefreshOutcome.Failed
+            Renewal.Unavailable
         }
-        lock.withLock { inFlight = null }
+        val outcome = lock.withLock {
+            inFlight = null
+            when (renewed) {
+                Renewal.Unavailable -> RefreshOutcome.Failed
+
+                is Renewal.Issued -> {
+                    val tokens = renewed.tokens
+                    if (tokens == null) {
+                        endLocked(SessionState.Expired)
+                        RefreshOutcome.Rejected
+                    } else {
+                        store.write(tokens)
+                        this.tokens = tokens
+                        mutableState.value = SessionState.Authenticated
+                        RefreshOutcome.Refreshed
+                    }
+                }
+            }
+        }
         return outcome
+    }
+
+    private fun NetworkError.isTransient(): Boolean {
+        return this is NetworkError.NoConnection ||
+            this is NetworkError.Timeout ||
+            this is NetworkError.Unavailable ||
+            this is NetworkError.RateLimited ||
+            this is NetworkError.Unexpected
+    }
+
+    private sealed interface Renewal {
+        data class Issued(
+            val tokens: Tokens?,
+        ) : Renewal
+
+        data object Unavailable : Renewal
     }
 
     private suspend fun restoreLocked() {

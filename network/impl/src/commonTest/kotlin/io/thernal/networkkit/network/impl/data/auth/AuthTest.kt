@@ -130,6 +130,20 @@ class AuthTest {
     }
 
     @Test
+    fun aRefreshEndpointThatAnswers401EndsTheSession() {
+        runTest {
+            session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
+            refresher.renew = { throw NetworkException(NetworkError.Unauthorized()) }
+            val client = server { "never" }
+
+            assertFailsWith<NetworkException> { client.get<JsonObject>("/me") }
+
+            assertEquals(expected = SessionState.Expired, actual = session.state.value)
+            assertNull(store.tokens)
+        }
+    }
+
+    @Test
     fun freshTokensTheServerKeepsRejectingEndTheSessionAfterTheRetries() {
         runTest {
             session.signIn(Tokens(accessToken = "t0", refreshToken = "r"))

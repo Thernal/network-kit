@@ -39,8 +39,8 @@ fun provideApiClient(factory: ApiClientFactory): ApiClient { return factory.crea
 }
 ```
 
-`TokenRefresher` returns null when the server rejects the refresh (a 401/400 from the refresh endpoint:
-catch that `NetworkException` and return null) and lets `NoConnection`/`Timeout` propagate — those keep the
-session. No sign-in in the app → exclude `NetworkAuthWiring` from the graph.
+`TokenRefresher` calls the endpoint and lets its `NetworkException` through: a rejection the server
+answered (401, 403, another 4xx) ends the session; `NoConnection`, `Timeout`, `Unavailable`, `RateLimited`
+keep it. Return null only when there is no refresh token. No sign-in in the app → exclude `NetworkAuthWiring` from the graph.
 
 Several hosts: one `@Provides` per host with a qualifier, each `factory.create { thatBaseUrl }`.

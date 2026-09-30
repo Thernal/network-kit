@@ -71,7 +71,7 @@ val authed = mockApiClient(interceptors = setOf(AuthInterceptor(session, setOf(r
 | Symptom | Cause |
 |---|---|
 | a request hangs after a 401 | the refresh endpoint is not in `AuthRoutes.public` — the refresh waits on itself |
-| users logged out on a flaky network | the refresher returns null for transient failures — let `NetworkException(NoConnection)` propagate |
+| users logged out on a flaky network | the refresher catches failures and returns null — let its `NetworkException` through |
 | 401 right after sign-in | `session.signIn` was not called, or the store writes but the manager was bypassed |
 | `Serialization` errors on success | the backend wraps bodies — add a `ResponseUnwrapper` |
 | every test call times out | a test client with timeouts under `runTest` — use `mockApiClient` or `NetworkConfig(timeouts = null)` |
