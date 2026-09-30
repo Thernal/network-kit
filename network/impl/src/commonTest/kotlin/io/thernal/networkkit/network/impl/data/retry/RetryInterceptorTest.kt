@@ -28,9 +28,7 @@ class RetryInterceptorTest {
     private val retry = RetryInterceptor(connectivity = connectivity, random = Random(seed = 1))
     private var calls = 0
 
-    private fun serverAnswering(
-        vararg statuses: HttpStatusCode,
-    ): ApiClient {
+    private fun serverAnswering(vararg statuses: HttpStatusCode): ApiClient {
         return mockApiClient(interceptors = setOf(retry)) {
             val status = statuses.getOrElse(calls) { statuses.last() }
             calls++
