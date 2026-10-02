@@ -1,5 +1,6 @@
 package io.thernal.networkkit.network.impl.data.auth
 
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
@@ -33,7 +34,7 @@ class AuthInterceptor(
 
     override val order: Int = 1
 
-    override val plugin: ClientPlugin<Unit> = createClientPlugin("ApiAuth") {
+    private val plugin: ClientPlugin<Unit> = createClientPlugin("ApiAuth") {
         on(Send) { request ->
             if (request.matchesAny(public)) {
                 request.headers.remove(HttpHeaders.Authorization)
@@ -69,6 +70,10 @@ class AuthInterceptor(
             }
             call
         }
+    }
+
+    override fun install(client: HttpClientConfig<*>) {
+        client.install(plugin)
     }
 
     private fun HttpRequestBuilder.bearer(token: String) {

@@ -28,7 +28,7 @@ class ApiClientFactory(
             expectSuccess = false
             install(ContentNegotiation) { json(config.json) }
             installTimeouts()
-            interceptors.sortedBy(Interceptor::order).forEach { install(it.plugin) }
+            interceptors.sortedBy(Interceptor::order).forEach { interceptor -> interceptor.install(client = this) }
         }
     }
 

@@ -157,15 +157,23 @@ Observe `state` at the root: on `Expired`, show sign-in. Requests without a toke
 ```kotlin
 class ClientHeaders(private val info: AppInfo) : Interceptor {
     override val order = 50
-    override val plugin = createClientPlugin("ClientHeaders") {
+    private val plugin = createClientPlugin("ClientHeaders") {
         onRequest { request, _ -> request.headers.append("X-App-Version", info.version) }
     }
+    override fun install(client: HttpClientConfig<*>) { client.install(plugin) }
 }
 @Provides @IntoSet fun provideClientHeaders(info: AppInfo): Interceptor { return ClientHeaders(info) }
 ```
 
-Lower `order` runs first; auth is `1`. A debug console's Ktor plugin is contributed the same way, in
-non-production builds.
+Any other Ktor plugin — configured or not, a debug console's, a logger's — is one line:
+
+```kotlin
+@Provides @ElementsIntoSet fun provideConsole(env: Env): Set<Interceptor> {
+    return if (env.isProduction) emptySet() else setOf(pluginInterceptor(ConsoleKtorPlugin, order = 200) { maskHeaders = true })
+}
+```
+
+Lower `order` runs first; auth is `1`, retries `10`.
 
 ## Retries and connectivity
 

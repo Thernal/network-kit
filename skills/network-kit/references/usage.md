@@ -43,9 +43,12 @@ Guests: no token, no `Authorization`; a protected route answers `Unauthorized`. 
 ```kotlin
 class ClientHeaders : Interceptor {
     override val order = 50
-    override val plugin = createClientPlugin("ClientHeaders") { onRequest { request, _ -> request.headers.append("X-Platform", "ios") } }
+    private val plugin = createClientPlugin("ClientHeaders") { onRequest { request, _ -> request.headers.append("X-Platform", "ios") } }
+    override fun install(client: HttpClientConfig<*>) { client.install(plugin) }
 }
 @Provides @IntoSet fun provideClientHeaders(): Interceptor { return ClientHeaders() }
+// Any plugin as it is, or with its configuration — a debug console's in non-production builds:
+@Provides @IntoSet fun provideConsole(): Interceptor { return pluginInterceptor(ConsoleKtorPlugin, order = 200) { maskHeaders = true } }
 ```
 
 ## Envelope backends

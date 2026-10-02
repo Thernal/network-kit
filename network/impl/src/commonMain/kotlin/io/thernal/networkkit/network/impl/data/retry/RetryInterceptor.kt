@@ -1,6 +1,7 @@
 package io.thernal.networkkit.network.impl.data.retry
 
 import io.ktor.client.call.HttpClientCall
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
@@ -57,7 +58,7 @@ class RetryInterceptor(
 ) : Interceptor {
     override val order: Int = 10
 
-    override val plugin: ClientPlugin<Unit> = createClientPlugin("ApiRetry") {
+    private val plugin: ClientPlugin<Unit> = createClientPlugin("ApiRetry") {
         on(Send) { request ->
             if (request.method !in policy.methods) {
                 return@on proceed(request)
@@ -73,6 +74,10 @@ class RetryInterceptor(
             }
             outcome.callOrThrow()
         }
+    }
+
+    override fun install(client: HttpClientConfig<*>) {
+        client.install(plugin)
     }
 
     private fun nextWait(
