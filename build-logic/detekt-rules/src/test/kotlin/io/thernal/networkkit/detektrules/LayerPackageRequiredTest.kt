@@ -13,7 +13,7 @@ class LayerPackageRequiredTest {
     fun `reports a file in the root package of an impl module`() {
         val findings = rule.lint(
             """
-            package io.thernal.networkkit.network.impl
+            package io.thernal.networkkit.features.profile.impl
 
             class BackStackNavigator
             """.trimIndent(),
@@ -26,7 +26,7 @@ class LayerPackageRequiredTest {
     fun `reports a file in the root package of an api module`() {
         val findings = rule.lint(
             """
-            package io.thernal.networkkit.network.api
+            package io.thernal.networkkit.features.profile.api
 
             interface Navigator
             """.trimIndent(),
@@ -39,7 +39,7 @@ class LayerPackageRequiredTest {
     fun `reports a package that is not a layer`() {
         val findings = rule.lint(
             """
-            package io.thernal.networkkit.network.api.deeplink
+            package io.thernal.networkkit.features.profile.api.deeplink
 
             class DeepLink
             """.trimIndent(),
@@ -51,11 +51,11 @@ class LayerPackageRequiredTest {
     @Test
     fun `allows each layer package and its topical sub packages`() {
         val sources = listOf(
-            "io.thernal.networkkit.network.api.domain",
-            "io.thernal.networkkit.network.api.presentation.navigator",
-            "io.thernal.networkkit.network.impl.data",
-            "io.thernal.networkkit.network.impl.domain.deeplink",
-            "io.thernal.networkkit.network.impl.presentation.scene",
+            "io.thernal.networkkit.features.profile.api.domain",
+            "io.thernal.networkkit.features.profile.api.presentation.navigator",
+            "io.thernal.networkkit.features.profile.impl.data",
+            "io.thernal.networkkit.features.profile.impl.domain.deeplink",
+            "io.thernal.networkkit.features.profile.impl.presentation.scene",
         )
 
         sources.forEach { packageName ->
@@ -66,7 +66,7 @@ class LayerPackageRequiredTest {
     @Test
     fun `ignores wiring build-logic and non-module packages`() {
         val sources = listOf(
-            "io.thernal.networkkit.network.wiring",
+            "io.thernal.networkkit.features.profile.wiring",
             "io.thernal.networkkit.buildlogic",
             "io.thernal.networkkit.detektrules.style",
         )
@@ -87,5 +87,44 @@ class LayerPackageRequiredTest {
         )
 
         assertEquals(0, findings.size)
+    }
+
+    @Test
+    fun `accepts a module named after its layer holding code directly`() {
+        val findings = rule.lint(
+            """
+            package io.thernal.networkkit.core.presentation.api.plugin.state
+
+            interface StateHandler
+            """.trimIndent(),
+        )
+
+        assertEquals(0, findings.size)
+    }
+
+    @Test
+    fun `reports a layer package repeated inside a module named after it`() {
+        val findings = rule.lint(
+            """
+            package io.thernal.networkkit.core.presentation.api.presentation.plugin
+
+            interface PluginContext
+            """.trimIndent(),
+        )
+
+        assertEquals(1, findings.size)
+    }
+
+    @Test
+    fun `reports another layer package inside a module named after a layer`() {
+        val findings = rule.lint(
+            """
+            package io.thernal.networkkit.core.presentation.impl.domain
+
+            class Mapper
+            """.trimIndent(),
+        )
+
+        assertEquals(1, findings.size)
     }
 }

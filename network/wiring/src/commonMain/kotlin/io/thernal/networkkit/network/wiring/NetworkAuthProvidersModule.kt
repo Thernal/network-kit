@@ -13,7 +13,7 @@ import io.thernal.networkkit.network.api.data.auth.TokenRefresher
 import io.thernal.networkkit.network.api.data.auth.TokenStore
 import io.thernal.networkkit.network.api.data.interceptor.Interceptor
 import io.thernal.networkkit.network.impl.data.auth.AuthInterceptor
-import io.thernal.networkkit.network.impl.data.auth.DefaultSessionManager
+import io.thernal.networkkit.network.impl.data.auth.SessionManagerImpl
 
 /**
  * Authentication: the [SessionManager] and the auth interceptor. The app binds [TokenStore] and
@@ -25,7 +25,7 @@ import io.thernal.networkkit.network.impl.data.auth.DefaultSessionManager
  */
 @BindingContainer
 @ContributesTo(AppScope::class)
-interface NetworkAuthWiring {
+interface NetworkAuthProvidersModule {
     @Multibinds(allowEmpty = true)
     val authRoutes: Set<AuthRoutes>
 
@@ -36,7 +36,7 @@ interface NetworkAuthWiring {
             store: TokenStore,
             refresher: Lazy<TokenRefresher>,
         ): SessionManager {
-            return DefaultSessionManager(store = store, refresher = { current -> refresher.value.refresh(current) })
+            return SessionManagerImpl(store = store, refresher = { current -> refresher.value.refresh(current) })
         }
 
         @Provides

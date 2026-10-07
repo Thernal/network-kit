@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
  * Reads `{ "code": 1001, "error": "VALIDATION", "message": "…", "fields": { "email": { "code": 2, "error": "TAKEN" } } }`
  * — every key optional. Anything else is not an error body: null.
  */
-class DefaultErrorBodyParser(
+class ErrorBodyParserImpl(
     private val json: Json = NetworkJson,
 ) : ErrorBodyParser {
     override fun parse(

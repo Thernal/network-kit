@@ -76,8 +76,8 @@ The same by hand, from a clone of this repository.
 | Module | Holds | Depends on |
 |---|---|---|
 | `network/api` | `ApiClient` and its verbs, `ApiRequest`/`RequestBuilder`, `NetworkError`/`NetworkException`/`NetworkResult`/`networkCall`, `ResponseUnwrapper`, `ErrorBodyParser`, `Interceptor`, `SessionManager`/`TokenStore`/`TokenRefresher`/`AuthRoutes`/`ApiRoutePattern`, `ConnectivityMonitor`, `HttpCacheStore`/`fetchConditional` | Ktor client core, coroutines, kotlinx.serialization |
-| `network/impl` | `ApiClientFactory` (OkHttp on Android, Darwin on iOS), the client, `DefaultErrorBodyParser`, `DefaultSessionManager`, `AuthInterceptor`, `RetryInterceptor`, connectivity (`ConnectivityManager`, `NWPathMonitor`), `InMemoryHttpCacheStore` | api, Ktor |
-| `network/wiring` | `NetworkWiring` (the factory, interceptor/unwrapper/parser sets), `NetworkAuthWiring` (session manager, auth interceptor, route set), `NetworkResilienceWiring` + `NetworkConnectivity{Android,Ios}Wiring` (retries, connectivity) | api, impl |
+| `network/impl` | `ApiClientFactory` (OkHttp on Android, Darwin on iOS), the client, `ErrorBodyParserImpl`, `SessionManagerImpl`, `AuthInterceptor`, `RetryInterceptor`, connectivity (`ConnectivityManager`, `NWPathMonitor`), `InMemoryHttpCacheStore` | api, Ktor |
+| `network/wiring` | `NetworkProvidersModule` (the factory, interceptor/unwrapper/parser sets), `NetworkAuthProvidersModule` (session manager, auth interceptor, route set), `NetworkResilienceProvidersModule` + `NetworkConnectivity{Android,Ios}Wiring` (retries, connectivity) | api, impl |
 | `network/testing` | `mockApiClient` over Ktor's MockEngine, `respondJson`, `FakeTokenStore`, `FakeTokenRefresher`, `FakeConnectivityMonitor` | api, impl, ktor-client-mock |
 
 ## Building

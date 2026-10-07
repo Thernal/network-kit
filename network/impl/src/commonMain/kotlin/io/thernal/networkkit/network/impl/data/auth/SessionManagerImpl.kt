@@ -28,7 +28,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * A refresh runs in [scope], not in the request that asked for it: a caller cancelled while waiting
  * does not cancel the refresh the other callers are waiting on too.
  */
-class DefaultSessionManager(
+class SessionManagerImpl(
     private val store: TokenStore,
     private val refresher: TokenRefresher,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
@@ -87,9 +87,17 @@ class DefaultSessionManager(
      * a failure that says nothing about the token — offline, timeout, the server unavailable or
      * rate-limiting, anything unexpected — keeps it for the next attempt.
      */
-    @Suppress("TooGenericExceptionCaught") // An app's refresher failing unexpectedly keeps the session.
     private suspend fun renew(current: Tokens): RefreshOutcome {
-        val renewed = try {
+        val renewed = ask(current)
+        return lock.withLock {
+            inFlight = null
+            applyLocked(renewed)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught") // An app's refresher failing unexpectedly keeps the session.
+    private suspend fun ask(current: Tokens): Renewal {
+        return try {
             Renewal.Issued(refresher.refresh(current))
         } catch (cancellation: CancellationException) {
             throw cancellation
@@ -102,26 +110,18 @@ class DefaultSessionManager(
         } catch (_: Exception) {
             Renewal.Unavailable
         }
-        val outcome = lock.withLock {
-            inFlight = null
-            when (renewed) {
-                Renewal.Unavailable -> RefreshOutcome.Failed
+    }
 
-                is Renewal.Issued -> {
-                    val tokens = renewed.tokens
-                    if (tokens == null) {
-                        endLocked(SessionState.Expired)
-                        RefreshOutcome.Rejected
-                    } else {
-                        store.write(tokens)
-                        this.tokens = tokens
-                        mutableState.value = SessionState.Authenticated
-                        RefreshOutcome.Refreshed
-                    }
-                }
-            }
+    private suspend fun applyLocked(renewed: Renewal): RefreshOutcome {
+        val tokens = (renewed as? Renewal.Issued ?: return RefreshOutcome.Failed).tokens
+        if (tokens == null) {
+            endLocked(SessionState.Expired)
+            return RefreshOutcome.Rejected
         }
-        return outcome
+        store.write(tokens)
+        this.tokens = tokens
+        mutableState.value = SessionState.Authenticated
+        return RefreshOutcome.Refreshed
     }
 
     private fun NetworkError.isTransient(): Boolean {

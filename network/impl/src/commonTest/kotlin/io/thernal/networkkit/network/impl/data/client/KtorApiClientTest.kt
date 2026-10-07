@@ -44,7 +44,7 @@ private data class NewPost(
 
 class KtorApiClientTest {
     @Test
-    fun getJoinsTheBaseUrlPathAndParametersAndDecodes() {
+    fun `get joins the base url path and parameters and decodes`() {
         runTest {
             var seen = ""
             val client = mockApiClient(baseUrl = "https://api.test/v1/") { request ->
@@ -60,7 +60,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun postSerializesTheBodyAsJson() {
+    fun `post serializes the body as json`() {
         runTest {
             var sent = ""
             val client = mockApiClient { request ->
@@ -76,7 +76,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun aUnitResponseReadsNoBody() {
+    fun `a unit response reads no body`() {
         runTest {
             val client = mockApiClient { respond(content = "", status = HttpStatusCode.NoContent) }
 
@@ -85,7 +85,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun statusesBecomeTheirErrors() {
+    fun `statuses become their errors`() {
         runTest {
             suspend fun errorFor(
                 status: HttpStatusCode,
@@ -111,7 +111,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun anErrorBodyIsParsedWithItsFieldErrors() {
+    fun `an error body is parsed with its field errors`() {
         runTest {
             val body = """
                 {"code": 1001, "error": "VALIDATION", "message": "Check the form",
@@ -132,7 +132,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun aBodyOfTheWrongShapeIsASerializationError() {
+    fun `a body of the wrong shape is a serialization error`() {
         runTest {
             val client = mockApiClient { respondJson("""{"title": "no id"}""") }
 
@@ -143,7 +143,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun anEngineFailureIsNoConnectionAndNetworkCallReturnsIt() {
+    fun `an engine failure is no connection and network call returns it`() {
         runTest {
             val client = mockApiClient { throw IOException("offline") }
 
@@ -154,7 +154,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun anUnwrapperOpensTheEnvelope() {
+    fun `an unwrapper opens the envelope`() {
         runTest {
             val unwrapper = ResponseUnwrapper { _, body -> checkNotNull(body.jsonObject["data"]) }
             val client = mockApiClient(config = NetworkConfig(responseUnwrapper = unwrapper)) {
@@ -167,7 +167,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun theBaseUrlIsReadOnEveryRequest() {
+    fun `the base url is read on every request`() {
         runTest {
             var base = "https://one.test"
             val hosts = mutableListOf<String>()
@@ -189,7 +189,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun aConditionalFetchSendsValidatorsAndReturnsNullOnNotModified() {
+    fun `a conditional fetch sends validators and returns null on not modified`() {
         runTest {
             val store = InMemoryHttpCacheStore()
             val sent = mutableListOf<String?>()
@@ -213,7 +213,7 @@ class KtorApiClientTest {
     }
 
     @Test
-    fun anUploadGoesOutBareAndReportsFailure() {
+    fun `an upload goes out bare and reports failure`() {
         runTest {
             var method: HttpMethod? = null
             val client = mockApiClient { request ->

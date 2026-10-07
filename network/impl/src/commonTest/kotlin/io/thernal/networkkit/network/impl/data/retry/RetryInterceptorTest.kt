@@ -21,8 +21,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-private const val RETRY_AFTER_MILLIS = 3_000L
-
 class RetryInterceptorTest {
     private val connectivity = FakeConnectivityMonitor()
     private val retry = RetryInterceptor(connectivity = connectivity, random = Random(seed = 1))
@@ -37,7 +35,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun anIdempotentRequestIsRetriedUntilItSucceeds() {
+    fun `an idempotent request is retried until it succeeds`() {
         runTest {
             val client = serverAnswering(
                 HttpStatusCode.ServiceUnavailable,
@@ -52,7 +50,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun retriesAreBounded() {
+    fun `retries are bounded`() {
         runTest {
             val client = serverAnswering(HttpStatusCode.ServiceUnavailable)
 
@@ -64,7 +62,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun postIsNeverRetried() {
+    fun `post is never retried`() {
         runTest {
             val client = serverAnswering(HttpStatusCode.ServiceUnavailable, HttpStatusCode.OK)
 
@@ -75,7 +73,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun aStatusThatRetryingCannotFixIsNotRetried() {
+    fun `a status that retrying cannot fix is not retried`() {
         runTest {
             val client = serverAnswering(HttpStatusCode.NotFound, HttpStatusCode.OK)
 
@@ -86,7 +84,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun aDroppedConnectionIsRetried() {
+    fun `a dropped connection is retried`() {
         runTest {
             val client = mockApiClient(interceptors = setOf(retry)) {
                 calls++
@@ -104,7 +102,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun whileOfflineTheFailureComesBackAtOnce() {
+    fun `while offline the failure comes back at once`() {
         runTest {
             connectivity.status.value = Connectivity.Offline
             val client = mockApiClient(interceptors = setOf(retry)) {
@@ -120,7 +118,7 @@ class RetryInterceptorTest {
     }
 
     @Test
-    fun retryAfterIsHonouredAndALongOneIsNotWaitedFor() {
+    fun `retry after is honoured and a long one is not waited for`() {
         runTest {
             val client = mockApiClient(interceptors = setOf(retry)) { request ->
                 calls++
@@ -144,3 +142,5 @@ class RetryInterceptorTest {
         }
     }
 }
+
+private const val RETRY_AFTER_MILLIS = 3_000L

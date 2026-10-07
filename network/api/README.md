@@ -40,7 +40,7 @@ Nothing is re-exported (`api(...)` is not used): declare what a module's own cod
 
 ### With Metro
 
-`NetworkWiring` provides `ApiClientFactory`. The app makes its clients — only it knows its base URLs:
+`NetworkProvidersModule` provides `ApiClientFactory`. The app makes its clients — only it knows its base URLs:
 
 ```kotlin
 @Provides @SingleIn(AppScope::class)
@@ -51,7 +51,7 @@ fun provideApiClient(factory: ApiClientFactory): ApiClient {
 
 Several hosts: one client each, under your own qualifiers.
 
-`NetworkAuthWiring` provides `SessionManager` and the auth interceptor. The app binds a `TokenStore` and a
+`NetworkAuthProvidersModule` provides `SessionManager` and the auth interceptor. The app binds a `TokenStore` and a
 `TokenRefresher`, and contributes its routes — **the refresh route must be public**:
 
 ```kotlin
@@ -75,12 +75,12 @@ Several hosts: one client each, under your own qualifiers.
 
 The refresher needs a client whose interceptors include the auth interceptor, which needs the session
 manager, which needs the refresher: the manager takes it lazily, so the cycle compiles. An app without
-sign-in excludes `NetworkAuthWiring` from its graph.
+sign-in excludes `NetworkAuthProvidersModule` from its graph.
 
 ### Without a DI framework
 
 ```kotlin
-val session = DefaultSessionManager(store = tokenStore, refresher = { current -> refresher.refresh(current) })
+val session = SessionManagerImpl(store = tokenStore, refresher = { current -> refresher.refresh(current) })
 val factory = ApiClientFactory(interceptors = setOf(AuthInterceptor(session, setOf(routes))))
 val client = factory.create { baseUrl }
 ```
@@ -177,7 +177,7 @@ Lower `order` runs first; auth is `1`, retries `10`.
 
 ## Retries and connectivity
 
-`NetworkResilienceWiring` installs `RetryInterceptor`: idempotent requests (GET, HEAD, PUT, DELETE, OPTIONS)
+`NetworkResilienceProvidersModule` installs `RetryInterceptor`: idempotent requests (GET, HEAD, PUT, DELETE, OPTIONS)
 that failed with a dropped connection, a timeout, 502/503/504 or 429 are retried up to twice, with
 exponential backoff and jitter or the server's `Retry-After` (up to 30 s). POST and PATCH are never retried.
 Nothing is retried while offline. Tune it by binding your own:
@@ -194,8 +194,8 @@ connectivity.status.collect { showOfflineBanner(it == Connectivity.Offline) }
 ```
 
 Android needs `<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />` in the app's
-manifest, and the graph's `Context` (`NetworkConnectivityAndroidWiring`). To opt out of both, exclude
-`NetworkResilienceWiring` and the two connectivity containers from the graph.
+manifest, and the graph's `Context` (`NetworkConnectivityAndroidProvidersModule`). To opt out of both, exclude
+`NetworkResilienceProvidersModule` and the two connectivity containers from the graph.
 
 ## Conditional cache
 
@@ -220,4 +220,4 @@ val client = mockApiClient { request ->
 
 `mockApiClient` is the real client — same decoding, errors and interceptors — over MockEngine, with no
 timeouts (they would fire at once under `runTest`'s virtual time). `FakeTokenStore` and `FakeTokenRefresher`
-drive a `DefaultSessionManager` in auth tests; `FakeConnectivityMonitor` switches online and offline.
+drive a `SessionManagerImpl` in auth tests; `FakeConnectivityMonitor` switches online and offline.

@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 
 class ApiRoutePatternTest {
     @Test
-    fun matchesByMethodAndSegments() {
+    fun `matches by method and segments`() {
         val pattern = ApiRoutePattern(method = "POST", path = "/users/{id}/avatar")
 
         assertTrue(pattern.matches(method = "post", path = "/users/42/avatar"))
@@ -23,7 +23,7 @@ class ApiRoutePatternTest {
     }
 
     @Test
-    fun aWildcardAndANullMethodMatchAnything() {
+    fun `a wildcard and a null method match anything`() {
         val pattern = ApiRoutePattern(method = null, path = "/public/*")
 
         assertTrue(pattern.matches(method = "DELETE", path = "/public/x"))
@@ -31,7 +31,7 @@ class ApiRoutePatternTest {
     }
 
     @Test
-    fun networkCallTurnsNetworkExceptionsIntoFailures() {
+    fun `network call turns network exceptions into failures`() {
         runTest {
             val failure = networkCall<Int> { throw NetworkException(NetworkError.Timeout) }
             val success = networkCall { 2 }.map { it * 2 }

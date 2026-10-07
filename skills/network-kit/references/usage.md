@@ -58,7 +58,7 @@ errors differ, one `ErrorBodyParser`.
 
 ## Retries and connectivity
 
-Idempotent requests are retried automatically (`NetworkResilienceWiring`): drops, timeouts, 502/503/504, 429
+Idempotent requests are retried automatically (`NetworkResilienceProvidersModule`): drops, timeouts, 502/503/504, 429
 with `Retry-After`; at most twice; never POST/PATCH; never while offline. Do not add another retry loop on top.
 
 ```kotlin
@@ -76,7 +76,7 @@ Android: `ACCESS_NETWORK_STATE` in the manifest.
 
 ```kotlin
 val client = mockApiClient { request -> respondJson("""{"id": 1}""") }
-val session = DefaultSessionManager(FakeTokenStore(Tokens("a")), FakeTokenRefresher { Tokens("b") })
+val session = SessionManagerImpl(FakeTokenStore(Tokens("a")), FakeTokenRefresher { Tokens("b") })
 val authed = mockApiClient(interceptors = setOf(AuthInterceptor(session, setOf(routes)))) { … }
 ```
 

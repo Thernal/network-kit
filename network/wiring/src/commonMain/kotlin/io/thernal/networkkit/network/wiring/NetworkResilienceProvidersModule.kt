@@ -11,12 +11,12 @@ import io.thernal.networkkit.network.impl.data.retry.RetryInterceptor
 
 /**
  * Automatic retries for idempotent requests, giving up at once while offline. The
- * [ConnectivityMonitor] comes from `NetworkConnectivityAndroidWiring` / `NetworkConnectivityIosWiring`.
+ * [ConnectivityMonitor] comes from `NetworkConnectivityAndroidProvidersModule` / `NetworkConnectivityIosProvidersModule`.
  * An app that wants neither excludes these three containers from its graph.
  */
 @BindingContainer
 @ContributesTo(AppScope::class)
-interface NetworkResilienceWiring {
+interface NetworkResilienceProvidersModule {
     companion object {
         @Provides
         @IntoSet
