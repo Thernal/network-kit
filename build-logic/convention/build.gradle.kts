@@ -14,9 +14,11 @@ kotlin {
 dependencies {
     compileOnly(libs.android.gradle.plugin)
     compileOnly(libs.kotlin.gradle.plugin)
+    compileOnly(libs.compose.compiler.gradle.plugin)
     // implementation, not compileOnly: unlike the others, the Detekt plugin is applied by a
     // convention rather than declared in the root build, so it has to travel with build-logic.
     implementation(libs.detekt.gradle.plugin)
+    testImplementation(libs.junit4)
 }
 
 gradlePlugin {
@@ -24,6 +26,14 @@ gradlePlugin {
         register("kmpLibrary") {
             id = "io.thernal.networkkit.kmp.library"
             implementationClass = "io.thernal.networkkit.buildlogic.KmpLibraryConventionPlugin"
+        }
+        register("compose") {
+            id = "io.thernal.networkkit.compose"
+            implementationClass = "io.thernal.networkkit.buildlogic.ComposeConventionPlugin"
+        }
+        register("androidApplication") {
+            id = "io.thernal.networkkit.android.application"
+            implementationClass = "io.thernal.networkkit.buildlogic.AndroidApplicationConventionPlugin"
         }
         register("injection") {
             id = "io.thernal.networkkit.injection"

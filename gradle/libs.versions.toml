@@ -8,6 +8,7 @@ agp = "9.2.1"
 
 # Android SDK
 android-compile-sdk = "37"
+android-target-sdk = "37"
 android-min-sdk = "24"
 
 # KotlinX
@@ -30,6 +31,7 @@ junit4 = "4.13.2"
 # Gradle plugins resolved on the build-logic classpath
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 
 # Kotlin
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
