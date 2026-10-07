@@ -7,12 +7,10 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-private const val PATH_REPORT_TIMEOUT_MILLIS = 5_000L
-
 /** `NWPathMonitor` on the simulator, for real: it reports a path status within seconds. */
 class IosConnectivityTest {
     @Test
-    fun theMonitorReportsAStatus() {
+    fun `the monitor reports a status`() {
         runBlocking {
             val status = withTimeout(PATH_REPORT_TIMEOUT_MILLIS) { iosConnectivity().first() }
 
@@ -20,3 +18,5 @@ class IosConnectivityTest {
         }
     }
 }
+
+private const val PATH_REPORT_TIMEOUT_MILLIS = 5_000L

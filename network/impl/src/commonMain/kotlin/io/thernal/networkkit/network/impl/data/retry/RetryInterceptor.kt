@@ -6,8 +6,6 @@ import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.thernal.networkkit.network.api.data.connectivity.Connectivity
 import io.thernal.networkkit.network.api.data.connectivity.ConnectivityMonitor
 import io.thernal.networkkit.network.api.data.interceptor.Interceptor
@@ -16,32 +14,7 @@ import kotlinx.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-
-/** How [RetryInterceptor] retries. */
-data class RetryPolicy(
-    /** Retries after the first attempt; 0 turns retrying off. */
-    val maxRetries: Int = 2,
-    val initialDelay: Duration = 500.milliseconds,
-    val maxDelay: Duration = 8.seconds,
-    /** A server's `Retry-After` longer than this is not waited for: the failure goes to the caller. */
-    val maxRetryAfter: Duration = 30.seconds,
-    /** Methods that are safe to send twice. POST and PATCH are not, and are never retried. */
-    val methods: Set<HttpMethod> = setOf(
-        HttpMethod.Get,
-        HttpMethod.Head,
-        HttpMethod.Put,
-        HttpMethod.Delete,
-        HttpMethod.Options,
-    ),
-    val statuses: Set<HttpStatusCode> = setOf(
-        HttpStatusCode.TooManyRequests,
-        HttpStatusCode.BadGateway,
-        HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.GatewayTimeout,
-    ),
-)
 
 /**
  * Retries idempotent requests that failed for reasons a second try can fix: the connection dropped, a

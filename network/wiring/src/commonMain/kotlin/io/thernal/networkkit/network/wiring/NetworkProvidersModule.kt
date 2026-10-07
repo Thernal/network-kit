@@ -10,7 +10,7 @@ import io.thernal.networkkit.network.api.data.client.ErrorBodyParser
 import io.thernal.networkkit.network.api.data.client.ResponseUnwrapper
 import io.thernal.networkkit.network.api.data.interceptor.Interceptor
 import io.thernal.networkkit.network.impl.data.client.ApiClientFactory
-import io.thernal.networkkit.network.impl.data.client.DefaultErrorBodyParser
+import io.thernal.networkkit.network.impl.data.client.ErrorBodyParserImpl
 import io.thernal.networkkit.network.impl.data.client.NetworkConfig
 
 /**
@@ -27,7 +27,7 @@ import io.thernal.networkkit.network.impl.data.client.NetworkConfig
  */
 @BindingContainer
 @ContributesTo(AppScope::class)
-interface NetworkWiring {
+interface NetworkProvidersModule {
     @Multibinds(allowEmpty = true)
     val interceptors: Set<Interceptor>
 
@@ -47,7 +47,7 @@ interface NetworkWiring {
         ): ApiClientFactory {
             val config = NetworkConfig(
                 responseUnwrapper = responseUnwrappers.singleOrNull(),
-                errorBodyParser = errorBodyParsers.singleOrNull() ?: DefaultErrorBodyParser(),
+                errorBodyParser = errorBodyParsers.singleOrNull() ?: ErrorBodyParserImpl(),
             )
             return ApiClientFactory(interceptors = interceptors, config = config)
         }

@@ -12,8 +12,6 @@ import io.thernal.networkkit.network.api.data.auth.RefreshOutcome
 import io.thernal.networkkit.network.api.data.auth.SessionManager
 import io.thernal.networkkit.network.api.data.interceptor.Interceptor
 
-private const val DEFAULT_MAX_RETRIES = 3
-
 /**
  * The HTTP half of authentication; the session half is [SessionManager]'s.
  *
@@ -87,3 +85,5 @@ class AuthInterceptor(
         return patterns.any { it.matches(method = method.value, path = path) }
     }
 }
+
+private const val DEFAULT_MAX_RETRIES = 3

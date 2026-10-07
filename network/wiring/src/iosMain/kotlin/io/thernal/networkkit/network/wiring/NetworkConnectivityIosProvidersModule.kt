@@ -11,7 +11,7 @@ import io.thernal.networkkit.network.impl.data.connectivity.iosConnectivityMonit
 /** Connectivity from `NWPathMonitor`. */
 @BindingContainer
 @ContributesTo(AppScope::class)
-interface NetworkConnectivityIosWiring {
+interface NetworkConnectivityIosProvidersModule {
     companion object {
         @Provides
         @SingleIn(AppScope::class)

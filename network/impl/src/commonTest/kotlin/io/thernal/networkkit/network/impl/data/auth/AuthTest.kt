@@ -24,13 +24,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-private const val CONCURRENT_REQUESTS = 5
-private const val REFRESH_DELAY_MILLIS = 50L
-
 class AuthTest {
     private val store = FakeTokenStore()
     private val refresher = FakeTokenRefresher()
-    private val session = DefaultSessionManager(store, refresher)
+    private val session = SessionManagerImpl(store, refresher)
     private val routes = AuthRoutes(
         public = setOf(ApiRoutePattern("POST", "/auth/refresh"), ApiRoutePattern(null, "/auth/login")),
         optional = setOf(ApiRoutePattern("GET", "/feed")),
@@ -54,7 +51,7 @@ class AuthTest {
     }
 
     @Test
-    fun theTokenGoesToProtectedRoutesButNotPublicOnes() {
+    fun `the token goes to protected routes but not public ones`() {
         runTest {
             session.signIn(Tokens(accessToken = "a1", refreshToken = "r1"))
             val client = server { "a1" }
@@ -67,7 +64,7 @@ class AuthTest {
     }
 
     @Test
-    fun aGuestSendsNoTokenAndA401RefreshesNothing() {
+    fun `a guest sends no token and a 401 refreshes nothing`() {
         runTest {
             val client = server { "a1" }
 
@@ -81,7 +78,7 @@ class AuthTest {
     }
 
     @Test
-    fun concurrent401sShareOneRefreshAndRetryWithTheNewToken() {
+    fun `concurrent 401 s share one refresh and retry with the new token`() {
         runTest {
             session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
             var valid = "new"
@@ -101,7 +98,7 @@ class AuthTest {
     }
 
     @Test
-    fun aRejectedRefreshExpiresTheSession() {
+    fun `a rejected refresh expires the session`() {
         runTest {
             session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
             refresher.renew = { null }
@@ -116,7 +113,7 @@ class AuthTest {
     }
 
     @Test
-    fun aRefreshThatCannotBeTriedKeepsTheSession() {
+    fun `a refresh that cannot be tried keeps the session`() {
         runTest {
             session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
             refresher.renew = { throw NetworkException(NetworkError.NoConnection) }
@@ -130,7 +127,7 @@ class AuthTest {
     }
 
     @Test
-    fun aRefreshEndpointThatAnswers401EndsTheSession() {
+    fun `a refresh endpoint that answers 401 ends the session`() {
         runTest {
             session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
             refresher.renew = { throw NetworkException(NetworkError.Unauthorized()) }
@@ -144,7 +141,7 @@ class AuthTest {
     }
 
     @Test
-    fun freshTokensTheServerKeepsRejectingEndTheSessionAfterTheRetries() {
+    fun `fresh tokens the server keeps rejecting end the session after the retries`() {
         runTest {
             session.signIn(Tokens(accessToken = "t0", refreshToken = "r"))
             var issued = 0
@@ -159,7 +156,7 @@ class AuthTest {
     }
 
     @Test
-    fun anOptionalRouteFallsBackToGuest() {
+    fun `an optional route falls back to guest`() {
         runTest {
             session.signIn(Tokens(accessToken = "old", refreshToken = "r1"))
             refresher.renew = { null }
@@ -172,10 +169,10 @@ class AuthTest {
     }
 
     @Test
-    fun theSessionIsRestoredFromTheStoreAndSignsOut() {
+    fun `the session is restored from the store and signs out`() {
         runTest {
             store.tokens = Tokens(accessToken = "saved")
-            val restored = DefaultSessionManager(store, refresher)
+            val restored = SessionManagerImpl(store, refresher)
 
             assertEquals(expected = "saved", actual = restored.accessToken())
             assertEquals(expected = SessionState.Authenticated, actual = restored.state.value)
@@ -186,3 +183,6 @@ class AuthTest {
         }
     }
 }
+
+private const val CONCURRENT_REQUESTS = 5
+private const val REFRESH_DELAY_MILLIS = 50L

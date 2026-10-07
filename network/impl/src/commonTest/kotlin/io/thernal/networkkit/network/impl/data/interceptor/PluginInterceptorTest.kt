@@ -23,7 +23,7 @@ private val HeaderPlugin = createClientPlugin("TestHeader", ::HeaderConfig) {
 
 class PluginInterceptorTest {
     @Test
-    fun aConfiguredPluginIsInstalledWithItsConfiguration() {
+    fun `a configured plugin is installed with its configuration`() {
         runTest {
             var seen: String? = null
             val interceptor = pluginInterceptor(HeaderPlugin, order = 200) {
@@ -43,7 +43,7 @@ class PluginInterceptorTest {
     }
 
     @Test
-    fun aPluginTakenAsItIsKeepsItsDefaults() {
+    fun `a plugin taken as it is keeps its defaults`() {
         runTest {
             var seen: String? = null
             val client = mockApiClient(interceptors = setOf(pluginInterceptor(HeaderPlugin))) { request ->

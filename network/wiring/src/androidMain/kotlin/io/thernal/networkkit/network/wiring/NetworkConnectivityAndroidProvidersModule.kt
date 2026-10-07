@@ -12,7 +12,7 @@ import io.thernal.networkkit.network.impl.data.connectivity.androidConnectivityM
 /** Connectivity from `ConnectivityManager`. The graph provides the application `Context`. */
 @BindingContainer
 @ContributesTo(AppScope::class)
-interface NetworkConnectivityAndroidWiring {
+interface NetworkConnectivityAndroidProvidersModule {
     companion object {
         @Provides
         @SingleIn(AppScope::class)
