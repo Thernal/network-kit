@@ -108,7 +108,7 @@ Every call throws `NetworkException(error)`:
 | `Timeout` | connect, socket or request timeout |
 | `Unauthorized(body)` | 401 that authentication did not recover, or a guest on a protected route |
 | `Forbidden(body)` | 403 |
-| `RateLimited(retryAfterSeconds)` | 429 |
+| `RateLimited(retryAfterSeconds, body)` | 429; `retryAfterSeconds` from `Retry-After`, `body` the parsed `ErrorBody` like any other error's |
 | `Unavailable(status)` | 502, 503, 504 |
 | `Http(status, body)` | any other non-success status; `body` is the parsed `ErrorBody`, field errors included |
 | `Serialization(cause)` | a body that does not match its type |
@@ -139,7 +139,13 @@ Cancellation is never turned into a failure.
 ```
 
 Contribute at most one unwrapper and one `ErrorBodyParser`; without one, the body is the response and error
-bodies are read as `{code, error, message, fields: {name: {code, error}}}`.
+bodies are read as `{code, error, message, fields: {name: {code, error}}}`, every other member kept in
+`ErrorBody.extras`. A parser of your own fills `extras` the same way, so what a backend sends beside the error
+(`"retryAfterSeconds": 900`, `"requestId": "…"`) reaches the repository as JSON:
+
+```kotlin
+val attemptsLeft = (error as? NetworkError.Http)?.body?.extras?.get("attemptsLeft")?.jsonPrimitive?.intOrNull
+```
 
 ## Sessions
 
