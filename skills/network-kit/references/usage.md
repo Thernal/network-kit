@@ -14,14 +14,14 @@ client.uploadRaw(url, bytes, contentType = ContentType.Image.JPEG)   // presigne
 ## Failures
 
 `NetworkException(error)`: `NoConnection`, `Timeout`, `Unauthorized(body)`, `Forbidden(body)`,
-`RateLimited(retryAfterSeconds)`, `Unavailable(status)`, `Http(status, body)`, `Serialization`, `Unexpected`.
+`RateLimited(retryAfterSeconds, body)`, `Unavailable(status)`, `Http(status, body)`, `Serialization`, `Unexpected`.
 
 ```kotlin
 suspend fun load(): NetworkResult<List<Post>> {
     return networkCall { api.posts().map { it.toDomain() } }
 }
 when (val error = (result as NetworkResult.Failure).error) {
-    is NetworkError.Http -> error.body?.fields          // form field errors
+    is NetworkError.Http -> error.body?.fields          // form field errors; error.body?.extras: the body's other members
     NetworkError.NoConnection -> …
     else -> …
 }

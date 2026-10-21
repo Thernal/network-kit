@@ -20,9 +20,13 @@ sealed interface NetworkError {
         val body: ErrorBody? = null,
     ) : NetworkError
 
-    /** 429, with the server's `Retry-After` in seconds when it sent one. */
+    /**
+     * 429, with the server's `Retry-After` in seconds when it sent one, and the error body the configured
+     * parser could read — a backend may say there how long to wait, or which limit was hit.
+     */
     data class RateLimited(
         val retryAfterSeconds: Long? = null,
+        val body: ErrorBody? = null,
     ) : NetworkError
 
     /** 502, 503 or 504: the server, not the request, is the problem; retrying later may work. */

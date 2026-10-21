@@ -151,7 +151,8 @@ internal class KtorApiClient(
             HttpStatusCode.Forbidden -> NetworkError.Forbidden(errorBody(response))
 
             HttpStatusCode.TooManyRequests -> NetworkError.RateLimited(
-                response.headers[HttpHeaders.RetryAfter]?.toLongOrNull(),
+                retryAfterSeconds = response.headers[HttpHeaders.RetryAfter]?.toLongOrNull(),
+                body = errorBody(response),
             )
 
             in UNAVAILABLE -> NetworkError.Unavailable(status)

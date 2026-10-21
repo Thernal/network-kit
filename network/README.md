@@ -24,6 +24,10 @@ ArenaGo's backend returns bodies as they are; Act2Act's wraps each in `{success,
 cannot assume either, so the body is the response unless the app registers a `ResponseUnwrapper`, which
 sees the JSON and returns the part to decode — or throws for an envelope that reports failure under a 200.
 Error bodies go through an `ErrorBodyParser`; the default reads ArenaGo's `{code, error, message, fields}`.
+A parser never throws away what it does not read: the rest of the body is `ErrorBody.extras`, because
+backends add members beside the error (RFC 9457's extension members — a retry delay, attempts left, a request
+id) and only the app knows which matter. A 429's body is parsed like any other error's for the same reason:
+the wait or the limit that was hit is often in the body, not in `Retry-After`.
 Decoding goes through a JSON element for exactly this: an unwrapper can open any envelope without the kit
 knowing its type.
 

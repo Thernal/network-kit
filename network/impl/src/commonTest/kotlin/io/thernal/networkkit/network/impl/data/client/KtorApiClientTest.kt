@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -128,6 +129,22 @@ class KtorApiClientTest {
                 fields = listOf(FieldError(field = "email", code = 2, error = "TAKEN")),
             )
             assertEquals(expected = NetworkError.Http(status = 422, body = expected), actual = error)
+        }
+    }
+
+    @Test
+    fun `a rate limit keeps its error body`() {
+        runTest {
+            val body = """{"error": "SLOW_DOWN", "retryAfterSeconds": 900}"""
+            val client = mockApiClient { respondJson(body, HttpStatusCode.TooManyRequests) }
+
+            val error = assertFailsWith<NetworkException> { client.post<NewPost, Post>("/posts", NewPost("x")) }.error
+
+            val expected = ErrorBody(
+                error = "SLOW_DOWN",
+                extras = mapOf("retryAfterSeconds" to JsonPrimitive(900)),
+            )
+            assertEquals(expected = NetworkError.RateLimited(body = expected), actual = error)
         }
     }
 
