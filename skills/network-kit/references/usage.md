@@ -88,6 +88,7 @@ val authed = mockApiClient(interceptors = setOf(AuthInterceptor(session, setOf(r
 | users logged out on a flaky network | the refresher catches failures and returns null — let its `NetworkException` through |
 | 401 right after sign-in | `session.signIn` was not called, or the store writes but the manager was bypassed |
 | `Serialization` errors on success | the backend wraps bodies — add a `ResponseUnwrapper` |
+| 404 on an endpoint the backend has | it routes `items/` and `items` apart — write the path with the slash its OpenAPI has; the client keeps it |
 | a request is sent twice | a retry of an idempotent request — make the endpoint idempotent, or use POST |
 | every test call times out | a test client with timeouts under `runTest` — use `mockApiClient` or `NetworkConfig(timeouts = null)` |
 | `Metro: cycle` involving `TokenRefresher` | the refresher was injected eagerly somewhere; the session manager takes it lazily — do the same |
