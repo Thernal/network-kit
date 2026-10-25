@@ -96,7 +96,8 @@ client.get<PostDto>("/avatar") { host("https://cdn.example.com") }   // one call
 client.uploadRaw(presignedUrl, bytes, contentType = ContentType.Image.JPEG)   // no interceptors
 ```
 
-A `path` is appended to the base URL (`https://api.example.com/v1` + `/posts` → `…/v1/posts`).
+A `path` is appended to the base URL (`https://api.example.com/v1` + `/posts` → `…/v1/posts`). A trailing slash
+is kept (`categories/` → `…/v1/categories/`): some backends route `categories/` and `categories` apart.
 
 ## Failures
 

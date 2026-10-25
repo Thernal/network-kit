@@ -61,6 +61,21 @@ class KtorApiClientTest {
     }
 
     @Test
+    fun `a trailing slash in the path is kept`() {
+        runTest {
+            var seen = ""
+            val client = mockApiClient(baseUrl = "https://api.test/v1/") { request ->
+                seen = request.url.toString()
+                respondJson("""{"id": 1, "title": "Hi"}""")
+            }
+
+            client.get<Post>("categories/")
+
+            assertEquals(expected = "https://api.test/v1/categories/", actual = seen)
+        }
+    }
+
+    @Test
     fun `post serializes the body as json`() {
         runTest {
             var sent = ""

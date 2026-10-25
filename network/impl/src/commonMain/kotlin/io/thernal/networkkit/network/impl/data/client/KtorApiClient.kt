@@ -108,7 +108,14 @@ internal class KtorApiClient(
     private fun HttpRequestBuilder.configure(request: ApiRequest) {
         url {
             takeFrom(request.host ?: baseUrl())
-            appendPathSegments(request.path.split('/').filter(String::isNotEmpty))
+            val segments = request.path.split('/').filter(String::isNotEmpty)
+            // A trailing slash is part of the path: some backends route "items/" and "items" apart.
+            val pathSegments = if (request.path.endsWith('/')) {
+                segments + ""
+            } else {
+                segments
+            }
+            appendPathSegments(pathSegments)
         }
         method = request.method
         request.parameters.forEach { (key, value) -> parameter(key = key, value = value) }
