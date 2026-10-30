@@ -1,4 +1,4 @@
-# Synced from conventions-kit aad643d by scripts/sync-kits.py.
+# Synced from conventions-kit e9da805 by scripts/sync-kits.py.
 # Do not edit build-logic/ here: change conventions-kit and sync again.
 # The kit's build checks every file below (verifyBuildLogic).
 f9aa4c517b084d899a9112a655af11c112b3e3f56d8d5127bc8c551412b80bb7  convention/build.gradle.kts
@@ -6,7 +6,7 @@ abfa52807a5d6b0a8536af8ae0356026e614f485c16cc9999556c778a9db6854  convention/src
 6512e081ade3904269ac5841585307b0b0be67009b0d1aa9fa377fb60c4910d8  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/BuildLogicManifest.kt
 b75a469ac9d96d968735a638b1f60499be7d935b65bd687cc56572dc919f3e65  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/ComposeConventionPlugin.kt
 3c822cb2419298a0b46b52beaaf2e4a5e85cb89f47bb403e68df21fd1dffb93c  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/InjectionConventionPlugin.kt
-45db9c6e1f4db85f38669dfca2f28741c068b4d1d69ea51948462e0991153d83  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/KmpLibraryConventionPlugin.kt
+ce57a0179ff76a350a95a137c65386de5fe0e00e5d546011af42ab1c460eb311  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/KmpLibraryConventionPlugin.kt
 dd05e1e2fa5eb6b279878e08284addaa87932e8777fef6c1af1f5ac74f28edb2  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/ProjectExtensions.kt
 7a6413b6e7da1489fcc61218c656149d57172951e92b4f63bf7106fe5ae46814  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/QualityConventionPlugin.kt
 e9c8af172dc8d90864b1308f32552f4f5c3530522de4f38cc590f24b06d3988a  convention/src/main/kotlin/io/thernal/networkkit/buildlogic/VerifyBuildLogicTask.kt
